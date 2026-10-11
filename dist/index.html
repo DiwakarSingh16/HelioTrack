@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07100f">
+  <meta name="description" content="HelioTrack — live monitoring and analytics for an ESP32 single-axis solar tracker.">
+  <title>HelioTrack • Solar Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark" aria-hidden="true"><span></span></div><div><strong>HELIO<span>TRACK</span></strong><small>SOLAR CONTROL</small></div></div>
+      <nav aria-label="Main navigation">
+        <button class="nav-item active" data-view="overview" aria-current="page"><span>◫</span>Overview</button>
+        <button class="nav-item" data-view="analytics"><span>⌁</span>Analytics</button>
+        <button class="nav-item" data-view="devices"><span>⌾</span>Connections</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="device-mini"><span class="status-dot"></span><div><b>Tracker 01</b><small id="sideStatus">Demo stream</small></div></div>
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle contrast">◐</button>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <button class="menu-btn" id="menuBtn" aria-label="Open navigation">☰</button>
+        <div><p class="eyebrow">ESP32 • SINGLE-AXIS ARRAY</p><h1 id="pageTitle">Overview</h1></div>
+        <div class="header-actions"><div class="live-pill"><i></i><span id="liveLabel">LIVE · DEMO</span></div><button class="connect-btn" data-open-connect>Connect device <span>↗</span></button></div>
+      </header>
+
+      <section class="view active" id="overviewView">
+        <div class="hero-grid">
+          <article class="card tracker-card">
+            <div class="card-head"><div><p class="eyebrow">LIVE POSITION</p><h2>Tracker alignment</h2></div><span class="updated" id="updatedAt">Updated now</span></div>
+            <div class="tracker-visual">
+              <div class="sun-orbit"><div class="orbit-line"></div><div class="sun" id="sunDot">☀</div><div class="panel-rig" id="panelRig"><div class="panel"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="stand"></div></div></div>
+              <div class="angle-readout"><strong id="angleValue">124.8°</strong><span>Panel angle</span></div>
+            </div>
+            <div class="axis-scale"><span>0° EAST</span><div><i id="axisFill"></i><b id="axisKnob"></b></div><span>180° WEST</span></div>
+            <div class="mini-stats"><div><span>Sun azimuth</span><b id="sunValue">128.1°</b></div><div><span>Tracking error</span><b class="good" id="errorValue">3.3°</b></div><div><span>Mode</span><b>AUTO</b></div></div>
+          </article>
+
+          <div class="metric-grid">
+            <article class="metric-card cyan"><div class="metric-icon">⌁</div><div><p>Output power</p><h3><span id="powerValue">18.4</span><small>W</small></h3><span class="trend">↗ <b id="powerTrend">8.2%</b> vs last hour</span></div><canvas class="spark" id="powerSpark" width="180" height="65"></canvas></article>
+            <article class="metric-card amber"><div class="metric-icon">☼</div><div><p>Illuminance</p><h3><span id="luxValue">87.2</span><small>klx</small></h3><span class="trend">Optimal sunlight</span></div><canvas class="spark" id="luxSpark" width="180" height="65"></canvas></article>
+            <article class="metric-card violet"><div class="metric-icon">ϟ</div><div><p>Panel voltage</p><h3><span id="voltageValue">18.6</span><small>V</small></h3><span class="trend">Stable output</span></div><canvas class="spark" id="voltageSpark" width="180" height="65"></canvas></article>
+            <article class="metric-card coral"><div class="metric-icon">◒</div><div><p>Temperature</p><h3><span id="tempValue">32.4</span><small>°C</small></h3><span class="trend">Within range</span></div><canvas class="spark" id="tempSpark" width="180" height="65"></canvas></article>
+          </div>
+        </div>
+
+        <div class="lower-grid">
+          <article class="card chart-card">
+            <div class="card-head"><div><p class="eyebrow">TODAY</p><h2>Energy performance</h2></div><div class="segmented" role="group" aria-label="Chart metric"><button class="active" data-metric="power">Power</button><button data-metric="lux">Light</button><button data-metric="temperature">Temp</button></div></div>
+            <div class="chart-wrap"><canvas id="mainChart"></canvas><div class="chart-tooltip" id="chartTooltip"></div></div>
+            <div class="chart-summary"><div><span>Peak output</span><b id="peakValue">21.8 W</b></div><div><span>Average</span><b id="avgValue">13.2 W</b></div><div><span>Energy today</span><b id="energyValue">112 Wh</b></div></div>
+          </article>
+          <article class="card health-card">
+            <div class="card-head"><div><p class="eyebrow">SYSTEM</p><h2>Device health</h2></div><span class="score">98%</span></div>
+            <div class="health-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="48"></circle><circle class="progress" cx="60" cy="60" r="48"></circle></svg><div><strong>Excellent</strong><span>All systems nominal</span></div></div>
+            <div class="health-list"><div><span><i class="ok"></i>ESP32 controller</span><b id="latencyValue">42 ms</b></div><div><span><i class="ok"></i>Tracking motor</span><b>Ready</b></div><div><span><i class="ok"></i>Sensor array</span><b>5 / 5</b></div><div><span><i class="ok"></i>Last sync</span><b id="syncValue">Now</b></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="analyticsView">
+        <div class="analytics-head"><div><p class="eyebrow">DEEP DIVE</p><h2>Performance analytics</h2><p>Explore trends, compare sensor signals, and export your readings.</p></div><div class="analytics-actions"><select id="rangeSelect" aria-label="Time range"><option value="60">Last hour</option><option value="360">Last 6 hours</option><option value="1440">Last 24 hours</option></select><button class="secondary-btn" id="exportBtn">↓ Export CSV</button></div></div>
+        <div class="insight-grid"><article><span>Tracking accuracy</span><strong id="accuracyKpi">97.4%</strong><small>+2.1% this week</small></article><article><span>Energy captured</span><strong id="capturedKpi">1.84 kWh</strong><small>Today so far</small></article><article><span>Estimated gain</span><strong>+28.6%</strong><small>vs fixed panel</small></article><article><span>Uptime</span><strong>99.8%</strong><small>Last 30 days</small></article></div>
+        <article class="card big-chart-card"><div class="card-head"><div><p class="eyebrow">MULTI-SENSOR</p><h2>Signal comparison</h2></div><div class="legend"><span><i class="cyan-bg"></i>Power</span><span><i class="amber-bg"></i>Light</span><span><i class="coral-bg"></i>Temperature</span></div></div><div class="chart-wrap analytics-chart"><canvas id="analyticsChart"></canvas><div class="chart-tooltip" id="analyticsTooltip"></div></div></article>
+        <div class="analytics-lower"><article class="card"><div class="card-head"><div><p class="eyebrow">EFFICIENCY</p><h2>Hourly yield</h2></div></div><div id="hourlyBars" class="hourly-bars"></div></article><article class="card alerts-card"><div class="card-head"><div><p class="eyebrow">SMART EVENTS</p><h2>Recent activity</h2></div><button class="text-btn" id="clearAlerts">Clear</button></div><div id="alertsList"></div></article></div>
+      </section>
+
+      <section class="view" id="devicesView">
+        <div class="connection-intro"><p class="eyebrow">DATA SOURCES</p><h2>Bring your tracker online</h2><p>Choose how this dashboard receives telemetry. Your settings stay only in this browser.</p></div>
+        <div class="source-grid">
+          <button class="source-card active" data-source="demo"><span class="source-icon">◉</span><b>Simulator</b><small>Explore with realistic live data</small><em>ACTIVE</em></button>
+          <button class="source-card" data-source="wifi"><span class="source-icon">⌁</span><b>ESP32 Wi-Fi</b><small>Poll a JSON endpoint on your LAN</small><em>SET UP</em></button>
+          <button class="source-card" data-source="bluetooth"><span class="source-icon">ᛒ</span><b>Bluetooth</b><small>Web Bluetooth GATT connection</small><em>SET UP</em></button>
+          <button class="source-card" data-source="thingspeak"><span class="source-icon">☁</span><b>ThingSpeak</b><small>Read your channel feed securely</small><em>SET UP</em></button>
+        </div>
+        <article class="card setup-panel" id="setupPanel"></article>
+        <article class="card data-contract"><div><p class="eyebrow">ESP32 FORMAT</p><h2>Expected JSON payload</h2><p>Your Wi-Fi endpoint or Bluetooth characteristic should provide these fields. Extra fields are safely ignored.</p></div><pre><code>{
+  "angle": 124.8,
+  "sunAngle": 128.1,
+  "voltage": 18.6,
+  "current": 0.99,
+  "lux": 87200,
+  "temperature": 32.4
+}</code></pre></article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="connectModal" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="close-btn" id="closeModal" aria-label="Close">×</button><p class="eyebrow">QUICK CONNECT</p><h2 id="modalTitle">Select a data source</h2><p>Open Connections to configure your ESP32 or cloud feed.</p><div class="modal-options"><button data-quick-source="wifi">⌁ <span><b>Wi-Fi endpoint</b><small>Fastest on your local network</small></span>→</button><button data-quick-source="bluetooth">ᛒ <span><b>Web Bluetooth</b><small>Direct, no router required</small></span>→</button><button data-quick-source="thingspeak">☁ <span><b>ThingSpeak</b><small>Access data from anywhere</small></span>→</button></div></div></div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
