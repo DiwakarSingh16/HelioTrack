@@ -84,7 +84,7 @@ function startSource(source){
   if(source==='thingspeak'){pollThingSpeak();state.timer=setInterval(pollThingSpeak,Math.max(15000,+state.config.pollMs||15000))}
   $$('.source-card').forEach(b=>b.classList.toggle('active',b.dataset.source===source));
 }
-function setConnected(name,ok=true){$('#liveLabel').textContent=`${ok?'LIVE':'OFFLINE'} · ${name.toUpperCase()}`;$('#sideStatus').textContent=ok?`${name} stream`:'Not connected';$('.live-pill i').style.background=ok?'var(--cyan)':'var(--coral)'}
+function setConnected(name,ok=true){$('#liveLabel').textContent=`${ok?'LIVE':'OFFLINE'} · ${name.toUpperCase()}`;const side=$('#sideStatus');if(side)side.textContent=ok?`${name} stream`:'Not connected';$('.live-pill i').style.background=ok?'var(--cyan)':'var(--coral)'}
 
 function canvasSize(canvas){const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=r.width*dpr;canvas.height=r.height*dpr;const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return {c,w:r.width,h:r.height}}
 function plotLine(canvas,data,color,fill=true,opts={}){
@@ -133,6 +133,8 @@ function exportCsv(){const head='timestamp,power_w,lux_klx,temperature_c,voltage
 
 document.addEventListener('click',e=>{
   const nav=e.target.closest('.nav-item');if(nav)showView(nav.dataset.view);
+  if(e.target.closest('#accountBtn')||e.target.closest('[data-open-account]')){const pop=$('#accountPopover');pop.classList.toggle('open');pop.setAttribute('aria-hidden',String(!pop.classList.contains('open')))}
+  if(e.target.closest('#closeAccount')){$('#accountPopover').classList.remove('open');$('#accountPopover').setAttribute('aria-hidden','true')}
   if(e.target.closest('#addFieldBtn')||e.target.closest('#emptyGauge'))openFieldModal();
   if(e.target.closest('[data-close-field]')||e.target===$('#fieldModal'))closeFieldModal();
   const remove=e.target.closest('[data-remove-field]');if(remove){state.customFields.splice(+remove.dataset.removeField,1);localStorage.setItem('helio-custom-fields',JSON.stringify(state.customFields));renderCustomFields();showToast('Custom field removed')}
@@ -143,6 +145,7 @@ document.addEventListener('click',e=>{
   const save=e.target.closest('[data-save]');if(save)saveConfig(save.dataset.save);
   const start=e.target.closest('[data-start]');if(start){startSource(start.dataset.start);showToast('Simulator restarted')}
   const metric=e.target.closest('[data-metric]');if(metric){state.metric=metric.dataset.metric;$$('[data-metric]').forEach(b=>b.classList.toggle('active',b===metric));drawMain()}
+  if(!e.target.closest('#accountPopover')&&!e.target.closest('#accountBtn')&&!e.target.closest('[data-open-account]')){$('#accountPopover').classList.remove('open');$('#accountPopover').setAttribute('aria-hidden','true')}
 });
 $('#fieldForm').addEventListener('submit',e=>{e.preventDefault();const min=Number($('#fieldMin').value),max=Number($('#fieldMax').value);if(!(max>min)){showToast('Maximum must be greater than minimum');return}state.customFields.push({label:$('#fieldLabel').value.trim(),key:$('#fieldKey').value.trim(),unit:$('#fieldUnit').value.trim(),color:$('#fieldColor').value,min,max});localStorage.setItem('helio-custom-fields',JSON.stringify(state.customFields));renderCustomFields();closeFieldModal();showToast('New live gauge added')});
 $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));$('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('high-contrast'));$('#exportBtn').addEventListener('click',exportCsv);$('#clearAlerts').addEventListener('click',()=>{alerts.length=0;renderAlerts()});window.addEventListener('resize',()=>requestAnimationFrame(drawAll));

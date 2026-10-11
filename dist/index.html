@@ -22,7 +22,7 @@
         <button class="nav-item" data-view="devices"><span>⌾</span>Connections</button>
       </nav>
       <div class="sidebar-foot">
-        <div class="device-mini"><span class="status-dot"></span><div><b>Tracker 01</b><small id="sideStatus">Demo stream</small></div></div>
+        <div class="device-mini"><span class="secure-dot">✓</span><div><b>Protected access</b><small>ChatGPT authentication</small></div></div>
         <button class="icon-btn" id="themeBtn" aria-label="Toggle contrast">◐</button>
       </div>
     </aside>
@@ -31,7 +31,7 @@
       <header>
         <button class="menu-btn" id="menuBtn" aria-label="Open navigation">☰</button>
         <div><p class="eyebrow">ESP32 • SINGLE-AXIS ARRAY</p><h1 id="pageTitle">Overview</h1></div>
-        <div class="header-actions"><div class="live-pill"><i></i><span id="liveLabel">LIVE · DEMO</span></div><button class="connect-btn" data-open-connect>Connect device <span>↗</span></button></div>
+        <div class="header-actions"><div class="live-pill"><i></i><span id="liveLabel">LIVE · DEMO</span></div><button class="account-btn" id="accountBtn" aria-label="Open account menu"><span class="avatar">U</span><span class="account-copy"><b>Account</b><small>Authenticated</small></span><span class="chevron">⌄</span></button><button class="connect-btn" data-open-connect>Connect device <span>↗</span></button></div>
       </header>
 
       <section class="view active" id="overviewView">
@@ -71,6 +71,7 @@
 
       <section class="view" id="devicesView">
         <div class="connection-intro"><p class="eyebrow">DATA SOURCES</p><h2>Bring your tracker online</h2><p>Choose how this dashboard receives telemetry. Your settings stay only in this browser.</p></div>
+        <article class="auth-card card"><div class="auth-shield">✓</div><div><p class="eyebrow">AUTHENTICATION ACTIVE</p><h2>Protected by ChatGPT sign-in</h2><p>Only people allowed by this Site’s access policy can open the dashboard. Authentication is enforced before the application loads.</p></div><button class="secondary-btn" data-open-account>View session</button></article>
         <div class="source-grid">
           <button class="source-card active" data-source="demo"><span class="source-icon">◉</span><b>Simulator</b><small>Explore with realistic live data</small><em>ACTIVE</em></button>
           <button class="source-card" data-source="wifi"><span class="source-icon">⌁</span><b>ESP32 Wi-Fi</b><small>Poll a JSON endpoint on your LAN</small><em>SET UP</em></button>
@@ -92,6 +93,7 @@
 
   <div class="modal-backdrop" id="connectModal" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="close-btn" id="closeModal" aria-label="Close">×</button><p class="eyebrow">QUICK CONNECT</p><h2 id="modalTitle">Select a data source</h2><p>Open Connections to configure your ESP32 or cloud feed.</p><div class="modal-options"><button data-quick-source="wifi">⌁ <span><b>Wi-Fi endpoint</b><small>Fastest on your local network</small></span>→</button><button data-quick-source="bluetooth">ᛒ <span><b>Web Bluetooth</b><small>Direct, no router required</small></span>→</button><button data-quick-source="thingspeak">☁ <span><b>ThingSpeak</b><small>Access data from anywhere</small></span>→</button></div></div></div>
   <div class="modal-backdrop" id="fieldModal" aria-hidden="true"><form class="modal field-modal" id="fieldForm"><button type="button" class="close-btn" data-close-field aria-label="Close">×</button><p class="eyebrow">CUSTOM SENSOR</p><h2>Add another gauge</h2><p>Map any JSON property or ThingSpeak field to a new dashboard column.</p><div class="form-grid"><div class="field"><label for="fieldLabel">Display name</label><input id="fieldLabel" required placeholder="Battery current"></div><div class="field"><label for="fieldKey">Data key</label><input id="fieldKey" required placeholder="current or field7"></div><div class="field"><label for="fieldUnit">Unit</label><input id="fieldUnit" placeholder="A"></div><div class="field"><label for="fieldColor">Gauge color</label><input id="fieldColor" type="color" value="#45e7c3"></div><div class="field"><label for="fieldMin">Minimum</label><input id="fieldMin" type="number" step="any" value="0"></div><div class="field"><label for="fieldMax">Maximum</label><input id="fieldMax" type="number" step="any" value="100"></div></div><div class="setup-actions"><button class="primary-btn" type="submit">Add live field</button><span class="hint">Saved on this device</span></div></form></div>
+  <div class="account-popover" id="accountPopover" aria-hidden="true"><div class="account-head"><span class="account-avatar">U</span><div><b>Authenticated user</b><small>Secure Site session</small></div><button id="closeAccount" aria-label="Close account menu">×</button></div><div class="session-row"><span><i></i>Authentication</span><b>Active</b></div><div class="session-row"><span>Access level</span><b>Authorized viewer</b></div><p>Your identity is verified by ChatGPT before this dashboard is served.</p><a class="signout-link" href="/signout-with-chatgpt?return_to=%2F" target="_top">Sign out securely</a></div>
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js"></script>
 </body>
