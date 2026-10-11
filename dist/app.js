@@ -12,7 +12,7 @@ const alerts = [
   ['↗','Output climbed 8.2%','Sunlight intensity increased','18 min'],
   ['↻','Daily calibration complete','Angle sensor zero-point verified','2 hr']
 ];
-const colors = {power:'#4a9fe3',lux:'#4aa594',temperature:'#bf8950',voltage:'#7e83be'};
+const colors = {power:'#13b7ff',lux:'#19baa6',temperature:'#e7a900',voltage:'#9026ed'};
 
 function initHistory(){
   const now=Date.now();
@@ -57,7 +57,7 @@ function renderCustomFields(){
 }
 function updateCustomGauges(){state.customFields.forEach((f,i)=>{const raw=state.raw[f.key],value=Number(raw),out=$('#customValue'+i);if(out)out.textContent=Number.isFinite(value)?(Math.abs(value)>=100?value.toFixed(0):value.toFixed(1)):'—';if(Number.isFinite(value))setGauge('customGauge'+i,value,+f.min,+f.max)})}
 function openFieldModal(){$('#fieldModal').classList.add('open');$('#fieldModal').setAttribute('aria-hidden','false');setTimeout(()=>$('#fieldLabel').focus(),50)}
-function closeFieldModal(){$('#fieldModal').classList.remove('open');$('#fieldModal').setAttribute('aria-hidden','true');$('#fieldForm').reset();$('#fieldColor').value='#4a9fe3'}
+function closeFieldModal(){$('#fieldModal').classList.remove('open');$('#fieldModal').setAttribute('aria-hidden','true');$('#fieldForm').reset();$('#fieldColor').value='#13b7ff'}
 
 function simulate(){
   const prev=state.data, drift=(scale)=> (Math.random()-.48)*scale;
