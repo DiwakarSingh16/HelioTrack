@@ -12,7 +12,7 @@ const alerts = [
   ['↗','Output climbed 8.2%','Sunlight intensity increased','18 min'],
   ['↻','Daily calibration complete','Angle sensor zero-point verified','2 hr']
 ];
-const colors = {power:'#45e7c3',lux:'#ffc65a',temperature:'#ff826f',voltage:'#9e74ff'};
+const colors = {power:'#4a9fe3',lux:'#4aa594',temperature:'#bf8950',voltage:'#7e83be'};
 
 function initHistory(){
   const now=Date.now();
@@ -57,7 +57,7 @@ function renderCustomFields(){
 }
 function updateCustomGauges(){state.customFields.forEach((f,i)=>{const raw=state.raw[f.key],value=Number(raw),out=$('#customValue'+i);if(out)out.textContent=Number.isFinite(value)?(Math.abs(value)>=100?value.toFixed(0):value.toFixed(1)):'—';if(Number.isFinite(value))setGauge('customGauge'+i,value,+f.min,+f.max)})}
 function openFieldModal(){$('#fieldModal').classList.add('open');$('#fieldModal').setAttribute('aria-hidden','false');setTimeout(()=>$('#fieldLabel').focus(),50)}
-function closeFieldModal(){$('#fieldModal').classList.remove('open');$('#fieldModal').setAttribute('aria-hidden','true');$('#fieldForm').reset();$('#fieldColor').value='#45e7c3'}
+function closeFieldModal(){$('#fieldModal').classList.remove('open');$('#fieldModal').setAttribute('aria-hidden','true');$('#fieldForm').reset();$('#fieldColor').value='#4a9fe3'}
 
 function simulate(){
   const prev=state.data, drift=(scale)=> (Math.random()-.48)*scale;
@@ -84,7 +84,7 @@ function startSource(source){
   if(source==='thingspeak'){pollThingSpeak();state.timer=setInterval(pollThingSpeak,Math.max(15000,+state.config.pollMs||15000))}
   $$('.source-card').forEach(b=>b.classList.toggle('active',b.dataset.source===source));
 }
-function setConnected(name,ok=true){$('#liveLabel').textContent=`${ok?'LIVE':'OFFLINE'} · ${name.toUpperCase()}`;const side=$('#sideStatus');if(side)side.textContent=ok?`${name} stream`:'Not connected';$('.live-pill i').style.background=ok?'var(--cyan)':'var(--coral)'}
+function setConnected(name,ok=true){$('#liveLabel').textContent=`${ok?'Live':'Offline'} · ${name}`;const side=$('#sideStatus');if(side)side.textContent=ok?`${name} stream`:'Not connected';$('.live-pill i').style.background=ok?'var(--cyan)':'var(--coral)'}
 
 function canvasSize(canvas){const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=r.width*dpr;canvas.height=r.height*dpr;const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return {c,w:r.width,h:r.height}}
 function plotLine(canvas,data,color,fill=true,opts={}){
@@ -152,4 +152,4 @@ $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'
 $('#mainChart').addEventListener('mousemove',e=>showChartTip(e,$('#mainChart'),$('#chartTooltip'),state.metric));$('#mainChart').addEventListener('mouseleave',()=>$('#chartTooltip').style.display='none');
 function showChartTip(e,canvas,tip,key){const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,idx=clamp(Math.round((x-27)/(r.width-36)*(Math.min(48,state.points.length)-1)),0,Math.min(48,state.points.length)-1),data=state.points.slice(-48)[idx];if(!data)return;const units={power:'W',lux:'klx',temperature:'°C'};tip.textContent=`${new Date(data.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · ${data[key].toFixed(1)} ${units[key]}`;tip.style.left=`${clamp(x,20,r.width-115)}px`;tip.style.top='28px';tip.style.display='block'}
 
-initHistory();renderBars();renderAlerts();renderSetup(state.source);renderCustomFields();startSource(state.source);drawAll();updateKpis();
+$('#signoutLink').href=atob('L3NpZ25vdXQtd2l0aC1jaGF0Z3B0P3JldHVybl90bz0lMkY=');initHistory();renderBars();renderAlerts();renderSetup(state.source);renderCustomFields();startSource(state.source);drawAll();updateKpis();
