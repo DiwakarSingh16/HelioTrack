@@ -4,7 +4,8 @@ const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const state = {
   source: localStorage.getItem('helio-source') || 'demo',
   metric: 'power', timer: null, points: [], config: JSON.parse(localStorage.getItem('helio-config') || '{}'),
-  data: { angle:124.8, sunAngle:128.1, voltage:18.6, current:.99, lux:87200, temperature:32.4 }
+  data: { angle:124.8, sunAngle:128.1, voltage:18.6, current:.99, lux:87200, temperature:32.4 },
+  raw: {}, customFields: JSON.parse(localStorage.getItem('helio-custom-fields') || '[]')
 };
 const alerts = [
   ['✓','Optimal alignment reached','Panel is within 3.3° of the sun','Now'],
@@ -36,18 +37,27 @@ function normalized(payload){
 function applyData(raw){
   const d=normalized(raw); if(Object.values(d).some(Number.isNaN)) return;
   d.angle=clamp(d.angle,0,180); d.sunAngle=clamp(d.sunAngle,0,180);
-  state.data=d; const power=d.voltage*d.current;
-  $('#angleValue').textContent=`${d.angle.toFixed(1)}°`; $('#sunValue').textContent=`${d.sunAngle.toFixed(1)}°`;
+  state.data=d; const power=d.voltage*d.current; state.raw={...raw,...d,power};
+  $('#angleValue').textContent=d.angle.toFixed(0); $('#sunValue').textContent=d.sunAngle.toFixed(0);
   $('#errorValue').textContent=`${Math.abs(d.sunAngle-d.angle).toFixed(1)}°`; $('#voltageValue').textContent=d.voltage.toFixed(1);
-  $('#powerValue').textContent=power.toFixed(1); $('#luxValue').textContent=(d.lux/1000).toFixed(1); $('#tempValue').textContent=d.temperature.toFixed(1);
-  const pct=d.angle/180*100; $('#axisFill').style.width=`${pct}%`; $('#axisKnob').style.left=`${pct}%`;
-  $('#panelRig').style.transform=`translateX(-50%) rotate(${d.angle-90}deg)`;
-  const sunX=9+d.sunAngle/180*80, sunY=115-Math.sin(d.sunAngle/180*Math.PI)*95; $('#sunDot').style.left=`${sunX}%`; $('#sunDot').style.top=`${sunY}px`;
-  $('#updatedAt').textContent='Updated now'; $('#syncValue').textContent='Now';
+  $('#powerValue').textContent=power.toFixed(1); $('#luxValue').textContent=clamp(d.lux/1000,0,100).toFixed(0); $('#tempValue').textContent=d.temperature.toFixed(0);
+  setGauge('gaugeAngle',d.angle,0,180);setGauge('gaugeSun',d.sunAngle,0,180);setGauge('gaugeVoltage',d.voltage,0,24);setGauge('gaugeLux',d.lux/1000,0,100);setGauge('gaugeTemp',d.temperature,0,100);updateCustomGauges();
+  $('#updatedAt').textContent='Updated now'; $('#syncValue').textContent='Synced now';
   const p={t:Date.now(),power:+power.toFixed(2),lux:+(d.lux/1000).toFixed(1),temperature:d.temperature,voltage:d.voltage};
   state.points.push(p); if(state.points.length>288)state.points.shift();
   drawAll(); updateKpis();
 }
+
+function setGauge(id,value,min,max){const path=$('#'+id);if(!path)return;const pct=clamp((Number(value)-min)/(max-min||1)*100,0,100);path.style.strokeDasharray=`${pct} 100`}
+function escapeHtml(value){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function renderCustomFields(){
+  const holder=$('#customGauges');if(!holder)return;
+  holder.innerHTML=state.customFields.map((f,i)=>`<article class="gauge-card custom-gauge-card" data-custom-index="${i}" style="--gauge:${escapeHtml(f.color)}"><button class="gauge-remove" data-remove-field="${i}" aria-label="Remove ${escapeHtml(f.label)}">×</button><div class="gauge-label">${escapeHtml(f.label)}</div><div class="gauge-wrap"><svg viewBox="0 0 120 82" aria-hidden="true"><path class="gauge-track" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/><path class="gauge-progress" id="customGauge${i}" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/></svg><div class="gauge-number"><strong id="customValue${i}">—</strong><span>${escapeHtml(f.unit)}</span></div><div class="gauge-limits"><span>${escapeHtml(f.min)}</span><span>${escapeHtml(f.max)}</span></div></div></article>`).join('');
+  $('#fieldCount').textContent=`${state.customFields.length} added`;updateCustomGauges();
+}
+function updateCustomGauges(){state.customFields.forEach((f,i)=>{const raw=state.raw[f.key],value=Number(raw),out=$('#customValue'+i);if(out)out.textContent=Number.isFinite(value)?(Math.abs(value)>=100?value.toFixed(0):value.toFixed(1)):'—';if(Number.isFinite(value))setGauge('customGauge'+i,value,+f.min,+f.max)})}
+function openFieldModal(){$('#fieldModal').classList.add('open');$('#fieldModal').setAttribute('aria-hidden','false');setTimeout(()=>$('#fieldLabel').focus(),50)}
+function closeFieldModal(){$('#fieldModal').classList.remove('open');$('#fieldModal').setAttribute('aria-hidden','true');$('#fieldForm').reset();$('#fieldColor').value='#45e7c3'}
 
 function simulate(){
   const prev=state.data, drift=(scale)=> (Math.random()-.48)*scale;
@@ -123,6 +133,9 @@ function exportCsv(){const head='timestamp,power_w,lux_klx,temperature_c,voltage
 
 document.addEventListener('click',e=>{
   const nav=e.target.closest('.nav-item');if(nav)showView(nav.dataset.view);
+  if(e.target.closest('#addFieldBtn')||e.target.closest('#emptyGauge'))openFieldModal();
+  if(e.target.closest('[data-close-field]')||e.target===$('#fieldModal'))closeFieldModal();
+  const remove=e.target.closest('[data-remove-field]');if(remove){state.customFields.splice(+remove.dataset.removeField,1);localStorage.setItem('helio-custom-fields',JSON.stringify(state.customFields));renderCustomFields();showToast('Custom field removed')}
   if(e.target.closest('[data-open-connect]')){$('#connectModal').classList.add('open');$('#connectModal').setAttribute('aria-hidden','false')}
   if(e.target.closest('#closeModal')||e.target===$('#connectModal')){$('#connectModal').classList.remove('open');$('#connectModal').setAttribute('aria-hidden','true')}
   const quick=e.target.closest('[data-quick-source]');if(quick){showView('devices');const s=quick.dataset.quickSource;renderSetup(s);$$('.source-card').forEach(b=>b.classList.toggle('active',b.dataset.source===s));$('#connectModal').classList.remove('open')}
@@ -131,8 +144,9 @@ document.addEventListener('click',e=>{
   const start=e.target.closest('[data-start]');if(start){startSource(start.dataset.start);showToast('Simulator restarted')}
   const metric=e.target.closest('[data-metric]');if(metric){state.metric=metric.dataset.metric;$$('[data-metric]').forEach(b=>b.classList.toggle('active',b===metric));drawMain()}
 });
+$('#fieldForm').addEventListener('submit',e=>{e.preventDefault();const min=Number($('#fieldMin').value),max=Number($('#fieldMax').value);if(!(max>min)){showToast('Maximum must be greater than minimum');return}state.customFields.push({label:$('#fieldLabel').value.trim(),key:$('#fieldKey').value.trim(),unit:$('#fieldUnit').value.trim(),color:$('#fieldColor').value,min,max});localStorage.setItem('helio-custom-fields',JSON.stringify(state.customFields));renderCustomFields();closeFieldModal();showToast('New live gauge added')});
 $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));$('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('high-contrast'));$('#exportBtn').addEventListener('click',exportCsv);$('#clearAlerts').addEventListener('click',()=>{alerts.length=0;renderAlerts()});window.addEventListener('resize',()=>requestAnimationFrame(drawAll));
 $('#mainChart').addEventListener('mousemove',e=>showChartTip(e,$('#mainChart'),$('#chartTooltip'),state.metric));$('#mainChart').addEventListener('mouseleave',()=>$('#chartTooltip').style.display='none');
 function showChartTip(e,canvas,tip,key){const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,idx=clamp(Math.round((x-27)/(r.width-36)*(Math.min(48,state.points.length)-1)),0,Math.min(48,state.points.length)-1),data=state.points.slice(-48)[idx];if(!data)return;const units={power:'W',lux:'klx',temperature:'°C'};tip.textContent=`${new Date(data.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · ${data[key].toFixed(1)} ${units[key]}`;tip.style.left=`${clamp(x,20,r.width-115)}px`;tip.style.top='28px';tip.style.display='block'}
 
-initHistory();renderBars();renderAlerts();renderSetup(state.source);startSource(state.source);drawAll();updateKpis();
+initHistory();renderBars();renderAlerts();renderSetup(state.source);renderCustomFields();startSource(state.source);drawAll();updateKpis();

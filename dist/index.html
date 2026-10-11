@@ -35,37 +35,31 @@
       </header>
 
       <section class="view active" id="overviewView">
-        <div class="hero-grid">
-          <article class="card tracker-card">
-            <div class="card-head"><div><p class="eyebrow">LIVE POSITION</p><h2>Tracker alignment</h2></div><span class="updated" id="updatedAt">Updated now</span></div>
-            <div class="tracker-visual">
-              <div class="sun-orbit"><div class="orbit-line"></div><div class="sun" id="sunDot">☀</div><div class="panel-rig" id="panelRig"><div class="panel"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="stand"></div></div></div>
-              <div class="angle-readout"><strong id="angleValue">124.8°</strong><span>Panel angle</span></div>
-            </div>
-            <div class="axis-scale"><span>0° EAST</span><div><i id="axisFill"></i><b id="axisKnob"></b></div><span>180° WEST</span></div>
-            <div class="mini-stats"><div><span>Sun azimuth</span><b id="sunValue">128.1°</b></div><div><span>Tracking error</span><b class="good" id="errorValue">3.3°</b></div><div><span>Mode</span><b>AUTO</b></div></div>
-          </article>
-
-          <div class="metric-grid">
-            <article class="metric-card cyan"><div class="metric-icon">⌁</div><div><p>Output power</p><h3><span id="powerValue">18.4</span><small>W</small></h3><span class="trend">↗ <b id="powerTrend">8.2%</b> vs last hour</span></div><canvas class="spark" id="powerSpark" width="180" height="65"></canvas></article>
-            <article class="metric-card amber"><div class="metric-icon">☼</div><div><p>Illuminance</p><h3><span id="luxValue">87.2</span><small>klx</small></h3><span class="trend">Optimal sunlight</span></div><canvas class="spark" id="luxSpark" width="180" height="65"></canvas></article>
-            <article class="metric-card violet"><div class="metric-icon">ϟ</div><div><p>Panel voltage</p><h3><span id="voltageValue">18.6</span><small>V</small></h3><span class="trend">Stable output</span></div><canvas class="spark" id="voltageSpark" width="180" height="65"></canvas></article>
-            <article class="metric-card coral"><div class="metric-icon">◒</div><div><p>Temperature</p><h3><span id="tempValue">32.4</span><small>°C</small></h3><span class="trend">Within range</span></div><canvas class="spark" id="tempSpark" width="180" height="65"></canvas></article>
+        <article class="meter-console card">
+          <div class="console-head"><div><div class="console-title">IOT SOLAR TRACKER <i></i></div><p>Live ESP32 telemetry · accelerator gauges</p></div><div class="console-actions"><span class="updated" id="updatedAt">Updated now</span><button class="add-field-btn" id="addFieldBtn">＋ Add field</button></div></div>
+          <div class="gauge-grid" id="gaugeGrid">
+            <article class="gauge-card" data-gauge="angle" style="--gauge:#16bfff"><div class="gauge-label">X - Axis</div><div class="gauge-wrap"><svg viewBox="0 0 120 82" aria-hidden="true"><path class="gauge-track" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/><path class="gauge-progress" id="gaugeAngle" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/></svg><div class="gauge-number"><strong id="angleValue">125</strong><span>°</span></div><div class="gauge-limits"><span>0</span><span>180</span></div></div></article>
+            <article class="gauge-card" data-gauge="sunAngle" style="--gauge:#9e31f4"><div class="gauge-label">Y - Axis</div><div class="gauge-wrap"><svg viewBox="0 0 120 82" aria-hidden="true"><path class="gauge-track" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/><path class="gauge-progress" id="gaugeSun" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/></svg><div class="gauge-number"><strong id="sunValue">136</strong><span>°</span></div><div class="gauge-limits"><span>0</span><span>180</span></div></div></article>
+            <article class="gauge-card" data-gauge="voltage" style="--gauge:#b5df32"><div class="gauge-label">Voltage <span>ϟ</span></div><div class="gauge-wrap"><svg viewBox="0 0 120 82" aria-hidden="true"><path class="gauge-track" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/><path class="gauge-progress" id="gaugeVoltage" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/></svg><div class="gauge-number"><strong id="voltageValue">18.6</strong><span>V</span></div><div class="gauge-limits"><span>0</span><span>24</span></div></div></article>
+            <article class="gauge-card" data-gauge="lux" style="--gauge:#2dd6bd"><div class="gauge-label">Luminance <span>☀</span></div><div class="gauge-wrap"><svg viewBox="0 0 120 82" aria-hidden="true"><path class="gauge-track" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/><path class="gauge-progress" id="gaugeLux" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/></svg><div class="gauge-number"><strong id="luxValue">87</strong><span>%</span></div><div class="gauge-limits"><span>0</span><span>100</span></div></div></article>
+            <article class="gauge-card" data-gauge="temperature" style="--gauge:#d6a51b"><div class="gauge-label">Temperature <span>♨</span></div><div class="gauge-wrap"><svg viewBox="0 0 120 82" aria-hidden="true"><path class="gauge-track" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/><path class="gauge-progress" id="gaugeTemp" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/></svg><div class="gauge-number"><strong id="tempValue">32</strong><span>°C</span></div><div class="gauge-limits"><span>0</span><span>100</span></div></div></article>
+            <div id="customGauges" class="custom-gauges"></div>
+            <button class="empty-gauge" id="emptyGauge"><span>＋</span><b>Add sensor field</b><small>Create another live column</small></button>
           </div>
+        </article>
+
+        <div class="dashboard-strip">
+          <article class="card compact-power"><div><p class="eyebrow">POWER NOW</p><h3><span id="powerValue">18.4</span> <small>W</small></h3><span>↗ <b id="powerTrend">8.2%</b> vs last hour</span></div><canvas class="spark" id="powerSpark" width="180" height="65"></canvas><canvas class="spark hidden-spark" id="luxSpark" width="180" height="65"></canvas><canvas class="spark hidden-spark" id="voltageSpark" width="180" height="65"></canvas><canvas class="spark hidden-spark" id="tempSpark" width="180" height="65"></canvas></article>
+          <article class="card compact-stat"><p class="eyebrow">TRACKING ERROR</p><strong id="errorValue">3.3°</strong><span>Auto alignment active</span></article>
+          <article class="card compact-stat"><p class="eyebrow">ENERGY TODAY</p><strong id="energyValue">112 Wh</strong><span>Estimated +28.6% gain</span></article>
+          <article class="card compact-stat"><p class="eyebrow">SYSTEM</p><strong class="online-text">● Online</strong><span id="syncValue">Synced now</span></article>
         </div>
 
-        <div class="lower-grid">
-          <article class="card chart-card">
-            <div class="card-head"><div><p class="eyebrow">TODAY</p><h2>Energy performance</h2></div><div class="segmented" role="group" aria-label="Chart metric"><button class="active" data-metric="power">Power</button><button data-metric="lux">Light</button><button data-metric="temperature">Temp</button></div></div>
-            <div class="chart-wrap"><canvas id="mainChart"></canvas><div class="chart-tooltip" id="chartTooltip"></div></div>
-            <div class="chart-summary"><div><span>Peak output</span><b id="peakValue">21.8 W</b></div><div><span>Average</span><b id="avgValue">13.2 W</b></div><div><span>Energy today</span><b id="energyValue">112 Wh</b></div></div>
-          </article>
-          <article class="card health-card">
-            <div class="card-head"><div><p class="eyebrow">SYSTEM</p><h2>Device health</h2></div><span class="score">98%</span></div>
-            <div class="health-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="48"></circle><circle class="progress" cx="60" cy="60" r="48"></circle></svg><div><strong>Excellent</strong><span>All systems nominal</span></div></div>
-            <div class="health-list"><div><span><i class="ok"></i>ESP32 controller</span><b id="latencyValue">42 ms</b></div><div><span><i class="ok"></i>Tracking motor</span><b>Ready</b></div><div><span><i class="ok"></i>Sensor array</span><b>5 / 5</b></div><div><span><i class="ok"></i>Last sync</span><b id="syncValue">Now</b></div></div>
-          </article>
-        </div>
+        <article class="card chart-card overview-chart">
+          <div class="card-head"><div><p class="eyebrow">TODAY</p><h2>Energy performance</h2></div><div class="segmented" role="group" aria-label="Chart metric"><button class="active" data-metric="power">Power</button><button data-metric="lux">Light</button><button data-metric="temperature">Temp</button></div></div>
+          <div class="chart-wrap"><canvas id="mainChart"></canvas><div class="chart-tooltip" id="chartTooltip"></div></div>
+          <div class="chart-summary"><div><span>Peak output</span><b id="peakValue">21.8 W</b></div><div><span>Average</span><b id="avgValue">13.2 W</b></div><div><span>Custom fields</span><b id="fieldCount">0 added</b></div></div>
+        </article>
       </section>
 
       <section class="view" id="analyticsView">
@@ -97,6 +91,7 @@
   </div>
 
   <div class="modal-backdrop" id="connectModal" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="close-btn" id="closeModal" aria-label="Close">×</button><p class="eyebrow">QUICK CONNECT</p><h2 id="modalTitle">Select a data source</h2><p>Open Connections to configure your ESP32 or cloud feed.</p><div class="modal-options"><button data-quick-source="wifi">⌁ <span><b>Wi-Fi endpoint</b><small>Fastest on your local network</small></span>→</button><button data-quick-source="bluetooth">ᛒ <span><b>Web Bluetooth</b><small>Direct, no router required</small></span>→</button><button data-quick-source="thingspeak">☁ <span><b>ThingSpeak</b><small>Access data from anywhere</small></span>→</button></div></div></div>
+  <div class="modal-backdrop" id="fieldModal" aria-hidden="true"><form class="modal field-modal" id="fieldForm"><button type="button" class="close-btn" data-close-field aria-label="Close">×</button><p class="eyebrow">CUSTOM SENSOR</p><h2>Add another gauge</h2><p>Map any JSON property or ThingSpeak field to a new dashboard column.</p><div class="form-grid"><div class="field"><label for="fieldLabel">Display name</label><input id="fieldLabel" required placeholder="Battery current"></div><div class="field"><label for="fieldKey">Data key</label><input id="fieldKey" required placeholder="current or field7"></div><div class="field"><label for="fieldUnit">Unit</label><input id="fieldUnit" placeholder="A"></div><div class="field"><label for="fieldColor">Gauge color</label><input id="fieldColor" type="color" value="#45e7c3"></div><div class="field"><label for="fieldMin">Minimum</label><input id="fieldMin" type="number" step="any" value="0"></div><div class="field"><label for="fieldMax">Maximum</label><input id="fieldMax" type="number" step="any" value="100"></div></div><div class="setup-actions"><button class="primary-btn" type="submit">Add live field</button><span class="hint">Saved on this device</span></div></form></div>
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js"></script>
 </body>
