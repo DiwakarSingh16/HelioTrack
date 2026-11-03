@@ -155,21 +155,21 @@ function selectComponent(id){
 
 // Three.js scene: a real perspective model with a mechanically rotating panel assembly.
 const sceneHost=$('#scene');
-const scene=new THREE.Scene();scene.background=new THREE.Color('#0d151e');scene.fog=new THREE.FogExp2('#0d151e',.025);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#91b3c3');scene.fog=new THREE.FogExp2('#91b3c3',.018);
 const camera=new THREE.PerspectiveCamera(37,1,.1,100);camera.position.set(8.5,6.5,10.5);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.outputColorSpace=THREE.SRGBColorSpace;sceneHost.appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;renderer.outputColorSpace=THREE.SRGBColorSpace;sceneHost.appendChild(renderer.domElement);
 const labelRenderer=new CSS2DRenderer();labelRenderer.domElement.className='label-layer';sceneHost.appendChild(labelRenderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.minDistance=6;controls.maxDistance=21;controls.maxPolarAngle=Math.PI*.47;controls.target.set(0,2,0);
-scene.add(new THREE.HemisphereLight('#bdd7e5','#142029',2.05));
-const keyLight=new THREE.DirectionalLight('#e0f4ff',3.1);keyLight.position.set(-5,9,6);keyLight.castShadow=true;keyLight.shadow.mapSize.set(1024,1024);keyLight.shadow.camera.left=-9;keyLight.shadow.camera.right=9;keyLight.shadow.camera.top=9;keyLight.shadow.camera.bottom=-9;scene.add(keyLight);
+scene.add(new THREE.HemisphereLight('#f3fbff','#546b61',3.1));
+const keyLight=new THREE.DirectionalLight('#fff6e8',4.2);keyLight.position.set(-5,9,6);keyLight.castShadow=true;keyLight.shadow.mapSize.set(1024,1024);keyLight.shadow.camera.left=-9;keyLight.shadow.camera.right=9;keyLight.shadow.camera.top=9;keyLight.shadow.camera.bottom=-9;scene.add(keyLight);
 const fillLight=new THREE.PointLight('#46dfc4',32,14);fillLight.position.set(5,4,-3);scene.add(fillLight);
-const sunLight=new THREE.DirectionalLight('#ffc875',2.2);sunLight.castShadow=true;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-9;sunLight.shadow.camera.right=9;sunLight.shadow.camera.top=9;sunLight.shadow.camera.bottom=-9;scene.add(sunLight);
+const sunLight=new THREE.DirectionalLight('#ffe0a2',3.3);sunLight.castShadow=true;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-9;sunLight.shadow.camera.right=9;sunLight.shadow.camera.top=9;sunLight.shadow.camera.bottom=-9;scene.add(sunLight);
 const sunBall=new THREE.Mesh(new THREE.SphereGeometry(.18,18,12),new THREE.MeshBasicMaterial({color:'#ffd585'}));scene.add(sunBall);
 const sunHalo=new THREE.Mesh(new THREE.SphereGeometry(.34,18,12),new THREE.MeshBasicMaterial({color:'#ffbd67',transparent:true,opacity:.14}));scene.add(sunHalo);
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({color:'#101820',roughness:.84,metalness:.08}));floor.rotation.x=-Math.PI/2;floor.position.y=-.02;floor.receiveShadow=true;scene.add(floor);
-const grid=new THREE.GridHelper(34,34,'#39707c','#27404b');grid.position.y=.008;grid.material.transparent=true;grid.material.opacity=.24;scene.add(grid);
-const centerGlow=new THREE.Mesh(new THREE.CircleGeometry(6.7,60),new THREE.MeshBasicMaterial({color:'#42bcbb',transparent:true,opacity:.035,depthWrite:false}));centerGlow.rotation.x=-Math.PI/2;centerGlow.position.y=.015;scene.add(centerGlow);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({color:'#82958a',roughness:.88,metalness:.03}));floor.rotation.x=-Math.PI/2;floor.position.y=-.02;floor.receiveShadow=true;scene.add(floor);
+const grid=new THREE.GridHelper(34,34,'#65838a','#91a6a0');grid.position.y=.008;grid.material.transparent=true;grid.material.opacity=.2;scene.add(grid);
+const centerGlow=new THREE.Mesh(new THREE.CircleGeometry(6.7,60),new THREE.MeshBasicMaterial({color:'#74d8c7',transparent:true,opacity:.055,depthWrite:false}));centerGlow.rotation.x=-Math.PI/2;centerGlow.position.y=.015;scene.add(centerGlow);
 const metal=new THREE.MeshStandardMaterial({color:'#677985',metalness:.82,roughness:.25});
 const darkMetal=new THREE.MeshStandardMaterial({color:'#273640',metalness:.78,roughness:.32});
 const frameMat=new THREE.MeshStandardMaterial({color:'#52717c',metalness:.72,roughness:.3,emissive:'#071416'});
