@@ -1,141 +1,50 @@
-# HelioTrack Solar Control
+# HelioTrack Solar Tracker
 
-HelioTrack is a responsive monitoring dashboard for an ESP32-based single-axis solar panel tracker. It displays live tracker position, electrical output, environmental readings, historical performance, and connection health on desktop and mobile devices.
+A responsive web dashboard for monitoring a single-axis solar tracker. HelioTrack reads ESP32 telemetry over Wi-Fi or Bluetooth, reads a ThingSpeak channel, or runs with a built-in simulator.
 
-The application can receive telemetry from an ESP32 over Wi-Fi or Bluetooth, read a ThingSpeak channel, or run with the included simulator when hardware is unavailable.
+![HelioTrack dashboard preview](docs/screenshots/dashboard-preview.svg)
 
-## Features
+## Sensor fields
 
-### Live dashboard
+The overview maps the channel's eight fields to the configured sensors:
 
-- Semicircular instrumentation gauges inspired by the physical tracker display
-- X-axis and Y-axis angle readings
-- Panel voltage
-- Luminance
-- Temperature
-- Output power calculation from voltage and current
-- Tracking error calculation
-- Connection and synchronization status
-- Responsive desktop and mobile layouts
+| ThingSpeak field | Sensor | Display range |
+| --- | --- | ---: |
+| `field1` | LDR 1 | 0–4095 |
+| `field2` | LDR 2 | 0–4095 |
+| `field3` | Servo Motor Angle | 0–180° |
+| `field4` | Solar panel temperature | 0–100 °C |
+| `field5` | Gyroscope X | −2–2 |
+| `field6` | Gyroscope Y | −2–2 |
+| `field7` | Gyroscope Z | −2–2 |
+| `field8` | Acceleration magnitude | 0–20 m/s² |
 
-### Custom sensor fields
+The ranges set the gauge scale; readings are displayed as received from the channel.
 
-- Add additional gauges without changing the source code
-- Configure the display name, telemetry key, unit, color, minimum, and maximum
-- Read custom properties from ESP32 JSON or ThingSpeak fields
-- Custom fields are persisted in browser `localStorage`
-- Individually remove custom fields
+## ThingSpeak setup
 
-### Analytics
+1. Serve the `dist` folder as described below and open the dashboard.
+2. Open **Connections → ThingSpeak**.
+3. Enter your channel ID and **read-only** API key.
+4. Connect. The app fetches the latest feed every 15 seconds by default.
 
-- Live power, luminance, temperature, and voltage history
-- Multi-sensor comparison chart
-- Tracking accuracy
-- Energy captured
-- Estimated gain compared with a fixed panel
-- Hourly yield visualization
-- Recent system events
-- CSV data export
+The read key is intentionally not included in this repository. ThingSpeak connection settings are saved in that browser's local storage. The dashboard runs entirely in the browser, so a key entered there can be seen by that browser's user.
 
-### Data connections
+## Run locally
 
-- Built-in realistic simulator
-- ESP32 Wi-Fi JSON endpoint polling
-- ESP32 Web Bluetooth GATT notifications
-- ThingSpeak channel feed integration
-- Configurable polling interval
-- Connection settings stored locally in the browser
-
-### Access and interface
-
-- Restricted hosted access and signed-in sessions
-- Secure sign-out
-- Dark industrial monitoring interface
-- Keyboard-accessible controls and semantic labels
-- Touch-friendly mobile navigation
-
-## Technology stack
-
-| Area | Technology |
-| --- | --- |
-| Structure | HTML5 |
-| Styling | CSS3 with custom properties, Grid, Flexbox, and responsive media queries |
-| Application logic | Vanilla JavaScript (ES2022+) |
-| Charts | Custom HTML Canvas rendering |
-| Gauges | Inline SVG paths controlled with JavaScript and CSS |
-| Wi-Fi data | Browser Fetch API and JSON |
-| Bluetooth data | Web Bluetooth API and GATT notifications |
-| Cloud telemetry | ThingSpeak REST API |
-| Local persistence | Web Storage / `localStorage` |
-| Data export | Blob API and generated CSV downloads |
-| Hosting | OpenAI Sites on Cloudflare infrastructure |
-| Authentication | Hosted access policy and signed-in Site sessions |
-
-The project deliberately has no frontend framework, package manager dependency, or build step. It can be served by any static HTTP server.
-
-## Project structure
-
-```text
-.
-├── .openai/
-│   └── hosting.json     # Hosting project and static directory configuration
-├── dist/
-│   ├── index.html       # Application markup
-│   ├── styles.css       # Layout, component, and responsive styling
-│   └── app.js           # Telemetry, charts, connections, and interactions
-└── README.md
-```
-
-## Start the app manually
-
-The application must be opened through an HTTP server. Opening `index.html` directly with a `file://` URL can prevent Bluetooth, network requests, and other browser APIs from working correctly.
-
-### Option 1: Python
-
-From the project directory, run:
+No build step or package installation is needed. Python 3 is sufficient:
 
 ```powershell
 python -m http.server 4173 --directory dist
 ```
 
-Then open:
+Then open [http://localhost:4173](http://localhost:4173). Use an HTTP server rather than opening `index.html` as a `file://` URL so browser network and Bluetooth APIs work correctly.
 
-```text
-http://localhost:4173
-```
+## Other data sources
 
-### Option 2: Node.js
+### ESP32 Wi-Fi
 
-If Node.js is installed, run:
-
-```powershell
-npx --yes serve dist -l 4173
-```
-
-Then open:
-
-```text
-http://localhost:4173
-```
-
-### Option 3: Visual Studio Code Live Server
-
-1. Open the project folder in Visual Studio Code.
-2. Install the **Live Server** extension if it is not already available.
-3. Right-click `dist/index.html`.
-4. Select **Open with Live Server**.
-
-## Connect an ESP32 over Wi-Fi
-
-The ESP32 should expose an HTTP or HTTPS endpoint that returns JSON. Open **Connections**, choose **ESP32 Wi-Fi**, enter the endpoint, select a polling interval, and connect.
-
-Example endpoint:
-
-```text
-http://192.168.4.1/data
-```
-
-Expected JSON:
+Choose **ESP32 Wi-Fi** in Connections and enter an endpoint returning JSON. The endpoint must allow cross-origin requests from the dashboard.
 
 ```json
 {
@@ -148,102 +57,37 @@ Expected JSON:
 }
 ```
 
-The endpoint must include a CORS response header that permits the dashboard origin. A basic development configuration is:
+An HTTPS-hosted dashboard cannot normally fetch an unsecured HTTP endpoint because browsers block mixed content.
 
-```http
-Access-Control-Allow-Origin: *
-Content-Type: application/json
-```
+### Bluetooth
 
-When the hosted HTTPS dashboard is used, browsers normally block requests to an unsecured `http://` ESP32 endpoint as mixed content. For production use, provide an HTTPS endpoint, use ThingSpeak, or run the dashboard locally on the same network.
-
-## Connect using Bluetooth
-
-1. Configure the ESP32 as a Bluetooth Low Energy peripheral.
-2. Create a telemetry service and readable/notifiable characteristic.
-3. Open **Connections** and select **Bluetooth**.
-4. Enter the service and characteristic UUIDs.
-5. Select **Pair Bluetooth device**.
-
-The characteristic can send either the JSON structure shown above or comma-separated values in this order:
+Choose **Bluetooth**, enter the ESP32 BLE service and characteristic UUIDs, then pair. The characteristic can send the JSON payload above or comma-separated values in this order:
 
 ```text
 angle,sunAngle,voltage,current,lux,temperature
 ```
 
-Example:
+Web Bluetooth support is best in Chrome and Edge on desktop and Android.
+
+### Simulator
+
+Choose **Simulator** to explore the dashboard without connected hardware.
+
+## Project files
 
 ```text
-124.8,128.1,18.6,0.99,87200,32.4
+.
+├── docs/screenshots/      # README images
+├── dist/
+│   ├── app.js             # Telemetry, charts, connections, interactions
+│   ├── index.html         # Dashboard markup
+│   └── styles.css         # Responsive dashboard styles
+└── README.md
 ```
 
-Web Bluetooth works best in Chrome or Edge on desktop and Android. It is not broadly supported by iOS Safari.
+## Notes
 
-## Connect to ThingSpeak
-
-1. Open **Connections** and select **ThingSpeak**.
-2. Enter the channel ID.
-3. Enter the read API key when the channel is private.
-4. Choose a refresh interval of at least 15 seconds.
-
-Default field mapping:
-
-| ThingSpeak field | Dashboard value |
-| --- | --- |
-| `field1` | Panel angle |
-| `field2` | Sun angle |
-| `field3` | Voltage |
-| `field4` | Current |
-| `field5` | Luminance |
-| `field6` | Temperature |
-
-Additional ThingSpeak values can be displayed with **Add field**, using keys such as `field7` or `field8`.
-
-## Custom fields
-
-Select **Add field** on the Overview screen and provide:
-
-- **Display name:** Text shown above the gauge
-- **Data key:** Property in the incoming payload, such as `humidity`, `current`, or `field7`
-- **Unit:** Gauge suffix, such as `A`, `%`, `rpm`, or `°C`
-- **Gauge color:** Instrument color
-- **Minimum and maximum:** Expected sensor range
-
-Custom field definitions are stored only in the current browser. Clearing browser site data removes them.
-
-## Validate changes
-
-Check JavaScript syntax:
-
-```powershell
-node --check dist/app.js
-```
-
-Start the local server and test these areas after making changes:
-
-- Overview gauges update continuously
-- Analytics navigation and charts render correctly
-- Custom fields can be added and removed
-- Wi-Fi and ThingSpeak failures show a useful status message
-- Bluetooth pairing opens only after a user action
-- Layout remains usable on phone-sized screens
-- CSV export downloads valid data
-
-## Browser support
-
-Current versions of Chrome and Edge provide the broadest feature support. Firefox and Safari can run the dashboard and Wi-Fi/ThingSpeak integrations, but Web Bluetooth support varies.
-
-## Security notes
-
-- Connection configuration and custom fields are stored in the browser, not transmitted to an application database.
-- ThingSpeak read keys are stored in browser `localStorage`; use a read-only key.
-- Never place a ThingSpeak write key, Wi-Fi password, or private device credential in the source files.
-- Hosted access restrictions are managed separately from ESP32 and ThingSpeak credentials.
-- Use HTTPS for production endpoints whenever possible.
-
-## Hosted version
-
-The deployed application is available at:
-
-[https://heliotrack-solar-control.ds6918821.chatgpt.site](https://heliotrack-solar-control.ds6918821.chatgpt.site)
-
+- Connection settings and custom fields are saved in browser local storage.
+- Use a read-only ThingSpeak key; never use a write key in a browser app.
+- The dashboard is static and can be served by any HTTP server or static hosting provider.
+- Hosted demo: [HelioTrack Solar Control](https://heliotrack-solar-control.ds6918821.chatgpt.site).

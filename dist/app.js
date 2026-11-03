@@ -2,11 +2,21 @@ const $ = (s, root=document) => root.querySelector(s);
 const $$ = (s, root=document) => [...root.querySelectorAll(s)];
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const state = {
-  source: localStorage.getItem('helio-source') || 'demo',
-  metric: 'power', timer: null, points: [], config: JSON.parse(localStorage.getItem('helio-config') || '{}'),
+  source: 'thingspeak',
+  metric: 'power', timer: null, points: [], config: {channelId:'',readKey:'',...(JSON.parse(localStorage.getItem('helio-config') || '{}'))},
   data: { angle:124.8, sunAngle:128.1, voltage:18.6, current:.99, lux:87200, temperature:32.4 },
   raw: {}, customFields: JSON.parse(localStorage.getItem('helio-custom-fields') || '[]')
 };
+const channelFields=[
+  {key:'field1',label:'LDR 1',unit:'',min:0,max:4095,color:'#13b7ff'},
+  {key:'field2',label:'LDR 2',unit:'',min:0,max:4095,color:'#9026ed'},
+  {key:'field3',label:'Servo Motor Angle',unit:'°',min:0,max:180,color:'#a8d414'},
+  {key:'field4',label:'Solar panel temperature',unit:'°C',min:0,max:100,color:'#e7a900'},
+  {key:'field5',label:'Gyroscope X',unit:'',min:-2,max:2,color:'#19baa6'},
+  {key:'field6',label:'Gyroscope Y',unit:'',min:-2,max:2,color:'#39c8a8'},
+  {key:'field7',label:'Gyroscope Z',unit:'',min:-2,max:2,color:'#ff8c69'},
+  {key:'field8',label:'Acceleration magnitude',unit:'m/s²',min:0,max:20,color:'#f26e9c'}
+];
 const alerts = [
   ['✓','Optimal alignment reached','Panel is within 3.3° of the sun','Now'],
   ['↗','Output climbed 8.2%','Sunlight intensity increased','18 min'],
@@ -35,6 +45,12 @@ function normalized(payload){
 }
 
 function applyData(raw){
+  state.raw={...raw};updateChannelGauges(raw);
+  if(Object.hasOwn(raw,'field1')){
+    $('#updatedAt').textContent='Updated now';
+    $('#syncValue').textContent='Synced now';
+    return;
+  }
   const d=normalized(raw); if(Object.values(d).some(Number.isNaN)) return;
   d.angle=clamp(d.angle,0,180); d.sunAngle=clamp(d.sunAngle,0,180);
   state.data=d; const power=d.voltage*d.current; state.raw={...raw,...d,power};
@@ -47,6 +63,9 @@ function applyData(raw){
   state.points.push(p); if(state.points.length>288)state.points.shift();
   drawAll(); updateKpis();
 }
+
+function renderChannelGauges(){const holder=$('#gaugeGrid');if(!holder)return;holder.innerHTML=channelFields.map((f,i)=>`<article class="gauge-card" style="--gauge:${f.color}"><div class="gauge-label">${f.label}</div><div class="gauge-wrap"><svg viewBox="0 0 120 82" aria-hidden="true"><path class="gauge-track" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/><path class="gauge-progress" id="channelGauge${i}" pathLength="100" d="M14 70 A46 46 0 0 1 106 70"/></svg><div class="gauge-number"><strong id="channelValue${i}">—</strong><span>${f.unit}</span></div><div class="gauge-limits"><span>${f.min}</span><span>${f.max}</span></div></div></article>`).join('')}
+function updateChannelGauges(raw){channelFields.forEach((f,i)=>{const n=Number(raw[f.key]),out=$('#channelValue'+i);if(!out)return;out.textContent=raw[f.key]==null||raw[f.key]===''?'—':Number.isFinite(n)?(Math.abs(n)>=100?n.toFixed(0):n.toFixed(2)):'—';if(Number.isFinite(n))setGauge('channelGauge'+i,n,f.min,f.max)})}
 
 function setGauge(id,value,min,max){const path=$('#'+id);if(!path)return;const pct=clamp((Number(value)-min)/(max-min||1)*100,0,100);path.style.strokeDasharray=`${pct} 100`}
 function escapeHtml(value){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
@@ -109,7 +128,7 @@ function renderSetup(source){
   const templates={
     demo:`<div class="setup-head"><div><h2>Built-in simulator</h2><p>Realistic values update every few seconds so you can explore every screen.</p></div><span class="live-pill"><i></i> RUNNING</span></div><div class="setup-actions"><button class="primary-btn" data-start="demo">Restart simulation</button><span class="hint">No hardware required</span></div>`,
     wifi:`<div class="setup-head"><div><h2>ESP32 Wi-Fi endpoint</h2><p>Enter an HTTP(S) endpoint that returns the JSON payload shown below.</p></div></div><div class="form-grid"><div class="field full"><label>Endpoint URL</label><input id="wifiUrl" value="${cfg.wifiUrl||'http://192.168.4.1/data'}" placeholder="http://192.168.4.1/data"></div><div class="field"><label>Poll interval (ms)</label><input id="wifiPoll" type="number" min="1000" value="${cfg.pollMs||3000}"></div></div><div class="setup-actions"><button class="primary-btn" data-save="wifi">Connect over Wi-Fi</button><span class="hint">ESP32 must allow CORS; HTTPS pages require an HTTPS endpoint.</span></div>`,
-    thingspeak:`<div class="setup-head"><div><h2>ThingSpeak channel</h2><p>Fields 1–6 map to angle, sun angle, voltage, current, lux, and temperature.</p></div></div><div class="form-grid"><div class="field"><label>Channel ID</label><input id="channelId" value="${cfg.channelId||''}" placeholder="1234567"></div><div class="field"><label>Read API key (optional for public channels)</label><input id="readKey" type="password" value="${cfg.readKey||''}" placeholder="••••••••••••••••"></div><div class="field"><label>Refresh interval (ms, min 15000)</label><input id="tsPoll" type="number" min="15000" value="${Math.max(15000,cfg.pollMs||15000)}"></div></div><div class="setup-actions"><button class="primary-btn" data-save="thingspeak">Connect to ThingSpeak</button><span class="hint">Uses the latest channel feed.</span></div>`,
+    thingspeak:`<div class="setup-head"><div><h2>ThingSpeak channel</h2><p>Map the eight configured sensor fields from your channel.</p></div></div><div class="form-grid"><div class="field"><label>Channel ID</label><input id="channelId" value="${cfg.channelId||''}" placeholder="Enter your channel ID"></div><div class="field"><label>Read API key (optional for public channels)</label><input id="readKey" type="password" value="${cfg.readKey||''}" placeholder="Enter your read-only key"></div><div class="field"><label>Refresh interval (ms, min 15000)</label><input id="tsPoll" type="number" min="15000" value="${Math.max(15000,cfg.pollMs||15000)}"></div></div><div class="setup-actions"><button class="primary-btn" data-save="thingspeak">Connect to ThingSpeak</button><span class="hint">Uses the latest channel feed.</span></div>`,
     bluetooth:`<div class="setup-head"><div><h2>Web Bluetooth</h2><p>Pair directly with an ESP32 BLE service. Readings may be JSON text or comma-separated values.</p></div></div><div class="form-grid"><div class="field"><label>Service UUID</label><input id="serviceUuid" value="${cfg.serviceUuid||'4fafc201-1fb5-459e-8fcc-c5c9c331914b'}"></div><div class="field"><label>Characteristic UUID</label><input id="charUuid" value="${cfg.charUuid||'beb5483e-36e1-4688-b7f5-ea07361b26a8'}"></div></div><div class="setup-actions"><button class="primary-btn" data-save="bluetooth">Pair Bluetooth device</button><span class="hint">Supported in Chrome/Edge on Android and desktop.</span></div>`
   };p.innerHTML=templates[source];
 }
@@ -152,4 +171,4 @@ $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'
 $('#mainChart').addEventListener('mousemove',e=>showChartTip(e,$('#mainChart'),$('#chartTooltip'),state.metric));$('#mainChart').addEventListener('mouseleave',()=>$('#chartTooltip').style.display='none');
 function showChartTip(e,canvas,tip,key){const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,idx=clamp(Math.round((x-27)/(r.width-36)*(Math.min(48,state.points.length)-1)),0,Math.min(48,state.points.length)-1),data=state.points.slice(-48)[idx];if(!data)return;const units={power:'W',lux:'klx',temperature:'°C'};tip.textContent=`${new Date(data.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · ${data[key].toFixed(1)} ${units[key]}`;tip.style.left=`${clamp(x,20,r.width-115)}px`;tip.style.top='28px';tip.style.display='block'}
 
-$('#signoutLink').href=atob('L3NpZ25vdXQtd2l0aC1jaGF0Z3B0P3JldHVybl90bz0lMkY=');initHistory();renderBars();renderAlerts();renderSetup(state.source);renderCustomFields();startSource(state.source);drawAll();updateKpis();
+$('#signoutLink').href=atob('L3NpZ25vdXQtd2l0aC1jaGF0Z3B0P3JldHVybl90bz0lMkY=');initHistory();renderBars();renderAlerts();renderSetup(state.source);renderChannelGauges();renderCustomFields();startSource(state.source);drawAll();updateKpis();
