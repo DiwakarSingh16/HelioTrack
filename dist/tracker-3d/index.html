@@ -19,7 +19,7 @@
   <header class="topbar">
     <a class="brand" href="../index.html" aria-label="Back to HelioTrack dashboard"><span class="brand-mark">H</span><span><b>HELIO<span>TRACK</span></b><small>ORBITAL LAB · SINGLE AXIS</small></span></a>
     <div class="top-status"><span class="signal-dot"></span><span id="connectionStatus">AWAITING TELEMETRY</span><i></i><span>3D SIMULATION ACTIVE</span></div>
-    <div class="top-actions"><button class="icon-button" id="helpButton" aria-label="Show controls" title="Controls">?</button><button class="outline-button" id="settingsButton">Connect ThingSpeak <span>↗</span></button></div>
+    <div class="top-actions"><button class="icon-button" id="helpButton" aria-label="Show controls" title="Controls">?</button><button class="outline-button" id="settingsButton">Connect data source <span>↗</span></button></div>
   </header>
 
   <main class="workspace">
@@ -48,14 +48,14 @@
 
     <aside class="telemetry-column">
       <div class="telemetry-head"><div><span class="eyebrow">INSTRUMENTATION</span><h2>Sensor signals</h2></div><button id="refreshButton" class="refresh-button" aria-label="Refresh sensor readings" title="Refresh now">⟳</button></div>
-      <div class="signal-summary"><span class="live-indicator"></span><span id="feedLabel">Waiting for ThingSpeak</span><b id="feedAge">—</b></div>
+      <div class="signal-summary"><span class="live-indicator"></span><span id="feedLabel">Starting sample simulation</span><b id="feedAge">DEMO</b></div>
       <div class="gauge-grid" id="gaugeGrid" aria-live="polite"></div>
       <div class="telemetry-foot"><span class="foot-line"></span><span>TELEMETRY FEED <b>FIELD 1 — 8</b></span><span id="lastUpdated">NO DATA</span></div>
     </aside>
   </main>
 
   <section class="history-shell" aria-labelledby="historyTitle">
-    <div class="history-heading"><div><span class="eyebrow">SIGNAL INTELLIGENCE <b> / </b> LOCAL HISTORY</span><h2 id="historyTitle">Telemetry analytics</h2><p>Channel history is cached in this browser and grows as new feeds arrive.</p></div><div class="history-stats"><div><span>STORED SAMPLES</span><b id="storedCount">0</b></div><div><span>LAST FEED</span><b id="historyUpdated">—</b></div><div><span>ACTIVE SENSOR</span><b id="activeSensor">LDR 1</b></div></div></div>
+    <div class="history-heading"><div><span class="eyebrow">SIGNAL INTELLIGENCE <b> / </b> LOCAL HISTORY</span><h2 id="historyTitle">Telemetry analytics</h2><p id="historyDescription">Connect a sensor for live data, or explore with illustrative demo readings.</p><span id="historyMode" class="history-mode">ILLUSTRATIVE DEMO DATA · NOT A LIVE FEED</span></div><div class="history-stats"><div><span>STORED SAMPLES</span><b id="storedCount">0</b></div><div><span>LAST FEED</span><b id="historyUpdated">—</b></div><div><span>ACTIVE SENSOR</span><b id="activeSensor">LDR 1</b></div></div></div>
     <div class="history-grid">
       <article class="chart-card trend-card"><div class="chart-head"><div><span class="chart-kicker">FIELD TREND</span><h3>Sensor history</h3></div><div class="chart-controls"><select id="fieldSelect" aria-label="Select sensor for history chart"></select><select id="rangeSelect" aria-label="Select history range"><option value="3600000">1 hour</option><option value="21600000">6 hours</option><option value="86400000" selected>24 hours</option><option value="604800000">7 days</option><option value="0">All stored</option></select></div></div><div class="chart-wrap"><canvas id="historyCanvas"></canvas><div class="chart-empty" id="historyEmpty">Connect ThingSpeak or start Demo Mode to build sensor history.</div><div class="chart-tooltip" id="historyTooltip"></div></div><div class="chart-legend"><i></i><span id="fieldLegend">LDR 1</span><span id="sampleLegend">0 samples</span></div></article>
       <article class="chart-card small-chart"><div class="chart-head"><div><span class="chart-kicker">DUAL LIGHT SENSORS</span><h3>LDR differential</h3></div><span class="chart-unit">ADC</span></div><div class="chart-wrap"><canvas id="lightCanvas"></canvas><div class="chart-empty" id="lightEmpty">Waiting for readings</div></div><div class="multi-legend"><span><i class="legend-cyan"></i>LDR 1</span><span><i class="legend-violet"></i>LDR 2</span></div></article>
@@ -63,7 +63,13 @@
     </div>
   </section>
 
-  <dialog id="connectionDialog" class="connection-dialog"><form method="dialog" id="connectionForm"><button class="dialog-close" value="cancel" aria-label="Close">×</button><span class="eyebrow">DATA LINK <b> / </b> THINGSPEAK</span><h2>Connect your channel</h2><p>Settings are shared with the main HelioTrack dashboard and stay in this browser.</p><label>Channel ID<input id="channelInput" inputmode="numeric" placeholder="Enter your channel ID"></label><label>Read API key <span>OPTIONAL FOR PUBLIC CHANNELS</span><input id="keyInput" type="password" placeholder="Read-only key"></label><div class="dialog-actions"><button id="saveConnection" class="primary-button" type="button">SAVE &amp; CONNECT</button><button class="cancel-button" value="cancel">CANCEL</button></div><small class="security-note">Use a read-only key. This static app stores it in browser local storage.</small></form></dialog>
+  <dialog id="connectionDialog" class="connection-dialog"><form method="dialog" id="connectionForm"><button class="dialog-close" value="cancel" aria-label="Close">×</button><span class="eyebrow">DATA LINK <b> / </b> TRACKER INPUT</span><h2>Choose a connection</h2><p>Use the same data sources as the main HelioTrack project. Settings stay in this browser.</p>
+    <label>Connection type<select id="sourceSelect"><option value="thingspeak">ThingSpeak channel</option><option value="wifi">ESP32 Wi-Fi endpoint</option><option value="bluetooth">Bluetooth · ESP32 BLE</option><option value="demo">Simulator · sample data</option></select></label>
+    <div class="source-fields" id="thingSpeakFields"><label>Channel ID<input id="channelInput" inputmode="numeric" placeholder="Enter your channel ID"></label><label>Read API key <span>OPTIONAL FOR PUBLIC CHANNELS</span><input id="keyInput" type="password" placeholder="Read-only key"></label></div>
+    <div class="source-fields hidden" id="wifiFields"><label>ESP32 JSON endpoint<input id="wifiUrlInput" type="url" placeholder="http://192.168.4.1/data"></label><label>Poll interval (ms)<input id="wifiPollInput" type="number" min="1000" value="3000"></label><small class="connection-hint">The endpoint must allow CORS. HTTPS pages cannot read insecure HTTP endpoints.</small></div>
+    <div class="source-fields hidden" id="bluetoothFields"><label>BLE service UUID<input id="serviceInput" placeholder="4fafc201-1fb5-459e-8fcc-c5c9c331914b"></label><label>Telemetry characteristic UUID<input id="characteristicInput" placeholder="beb5483e-36e1-4688-b7f5-ea07361b26a8"></label><small class="connection-hint">Pairing is supported in Chrome/Edge. Connect from this button while the tracker is nearby.</small></div>
+    <div class="source-fields hidden demo-intro" id="demoFields"><div class="demo-badge">SIMULATION READY</div><p>Load a complete daylight cycle of sample readings and explore the gauges and analytics without hardware.</p></div>
+    <div class="dialog-actions"><button id="saveConnection" class="primary-button" type="button">SAVE &amp; CONNECT</button><button class="cancel-button" value="cancel">CANCEL</button></div><small class="security-note">ThingSpeak read keys are stored in local browser storage. Never use a write key here.</small></form></dialog>
   <div class="toast" id="toast" role="status"></div>
   <script type="module" src="app.js"></script>
 </body>
