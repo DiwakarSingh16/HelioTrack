@@ -32,9 +32,9 @@ The read key is intentionally not included in this repository. ThingSpeak connec
 
 ## Orbital Lab: 3D tracker simulation
 
-Open **3D Tracker Lab** from the dashboard header, or navigate to `/tracker-3d/`. The new experience lives in its own folder and includes a perspective, orbitable Three.js model of the tracker assembly, a rotating single-axis panel, labelled hardware, auto-tracking and manual tilt controls, and eight speedometer-style gauges mapped to ThingSpeak `field1` through `field8`.
+Open **3D Tracker Lab** from the dashboard header, or navigate to `/tracker-3d/`. The new experience lives in its own folder and includes a perspective, orbitable Three.js model of the tracker assembly, a rotating single-axis panel, labelled hardware, auto-tracking and manual tilt controls, and eight speedometer-style gauges mapped to ThingSpeak `field1` through `field8`. A sped-up daylight cycle moves the sun and its shadows; auto tracking follows the sun angle, while manual tilt shows the resulting panel-to-sun incidence.
 
-The lab reuses saved ThingSpeak settings when they exist. To configure them, select **Connect ThingSpeak** and enter the channel ID and read-only key. The page can also run in **Demo Mode** without a channel. It loads Three.js r187 from jsDelivr, so the first 3D load requires internet access.
+The lab reuses saved ThingSpeak settings when they exist. To configure them, select **Connect ThingSpeak** and enter the channel ID and read-only key. The page reads the latest 200 feed entries on connection, then polls for new readings every 15 seconds. It caches up to 3,000 samples per channel in this browser and shows field trends, LDR comparison, and gyro history. **Demo Mode** produces illustrative data and charts without a channel; those demo samples are not mixed into channel history. It loads Three.js r187 from jsDelivr, so the first 3D load requires internet access.
 
 ## Run locally
 
