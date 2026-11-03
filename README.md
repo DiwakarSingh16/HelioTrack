@@ -30,6 +30,12 @@ The ranges set the gauge scale; readings are displayed as received from the chan
 
 The read key is intentionally not included in this repository. ThingSpeak connection settings are saved in that browser's local storage. The dashboard runs entirely in the browser, so a key entered there can be seen by that browser's user.
 
+## Orbital Lab: 3D tracker simulation
+
+Open **3D Tracker Lab** from the dashboard header, or navigate to `/tracker-3d/`. The new experience lives in its own folder and includes a perspective, orbitable Three.js model of the tracker assembly, a rotating single-axis panel, labelled hardware, auto-tracking and manual tilt controls, and eight speedometer-style gauges mapped to ThingSpeak `field1` through `field8`.
+
+The lab reuses saved ThingSpeak settings when they exist. To configure them, select **Connect ThingSpeak** and enter the channel ID and read-only key. The page can also run in **Demo Mode** without a channel. It loads Three.js r187 from jsDelivr, so the first 3D load requires internet access.
+
 ## Run locally
 
 No build step or package installation is needed. Python 3 is sufficient:
@@ -81,7 +87,8 @@ Choose **Simulator** to explore the dashboard without connected hardware.
 ├── dist/
 │   ├── app.js             # Telemetry, charts, connections, interactions
 │   ├── index.html         # Dashboard markup
-│   └── styles.css         # Responsive dashboard styles
+│   ├── styles.css         # Responsive dashboard styles
+│   └── tracker-3d/         # Interactive 3D tracker and sensor instruments
 └── README.md
 ```
 

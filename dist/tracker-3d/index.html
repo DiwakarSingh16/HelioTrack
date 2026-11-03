@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="Interactive 3D solar tracker simulation with live ThingSpeak sensor speedometers.">
+  <title>HelioTrack · Orbital Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+  <header class="topbar">
+    <a class="brand" href="../index.html" aria-label="Back to HelioTrack dashboard"><span class="brand-mark">H</span><span><b>HELIO<span>TRACK</span></b><small>ORBITAL LAB · SINGLE AXIS</small></span></a>
+    <div class="top-status"><span class="signal-dot"></span><span id="connectionStatus">AWAITING TELEMETRY</span><i></i><span>3D SIMULATION ACTIVE</span></div>
+    <div class="top-actions"><button class="icon-button" id="helpButton" aria-label="Show controls" title="Controls">?</button><button class="outline-button" id="settingsButton">Connect ThingSpeak <span>↗</span></button></div>
+  </header>
+
+  <main class="workspace">
+    <aside class="component-rail">
+      <div class="rail-head"><span class="eyebrow">ASSEMBLY MAP</span><span class="counter">08</span></div>
+      <div class="system-name"><div class="system-glyph">◈</div><div><b>Solar array</b><small>1-AXIS TRACKER · REV 02</small></div></div>
+      <div class="component-list" id="componentList" aria-label="Tracker components"></div>
+      <div class="rail-bottom"><div class="online-ring"><span>3D</span></div><div><b>MODEL READY</b><small>Orbit to inspect</small></div></div>
+    </aside>
+
+    <section class="simulation-column">
+      <div class="section-heading"><div><span class="eyebrow">DIGITAL TWIN <b> / </b> LIVE TELEMETRY</span><h1>Tracker <span>simulation</span></h1><p>One axis. Eight sensors. Every component in view.</p></div><div class="heading-readout"><span>TRACK ANGLE</span><b id="angleReadout">—<small>°</small></b></div></div>
+      <section class="viewport-card" aria-label="Interactive three dimensional single-axis solar tracker simulation">
+        <div class="viewport-top"><div class="viewport-mode"><span class="pulse-dot"></span><span id="sceneMode">LIVE MODEL</span><span class="divider"></span><span>PERSPECTIVE</span></div><div class="viewport-actions"><button id="labelsButton" class="small-tool active" title="Toggle component labels">LABELS <span>ON</span></button><button id="resetViewButton" class="small-tool" title="Reset camera">RESET VIEW <b>↗</b></button></div></div>
+        <div id="scene" class="scene"></div>
+        <div class="scene-hud hud-top-left"><span class="hud-cross">⌖</span><span>ARRAY NORMAL</span><b id="normalReadout">—</b></div>
+        <div class="scene-hud hud-bottom-left"><span>AZIMUTH</span><b id="azimuthReadout">—°</b><i></i><span>DRAG TO ORBIT</span></div>
+        <div class="scene-axis"><span>X</span><span>Y</span><span>Z</span></div>
+        <div class="scene-caption"><span class="caption-beam"></span><span>SUN VECTOR</span><i></i><span>SHAFT AXIS</span></div>
+        <div class="focus-card" id="focusCard"><span class="focus-kicker">SELECTED COMPONENT</span><b id="focusName">Photovoltaic array</b><span id="focusDesc">Multi-cell module · active single-axis mount</span></div>
+        <div class="viewport-bottom"><div class="motion-control"><button id="trackingToggle" class="tracking-toggle on"><span class="toggle-knob"></span></button><div><b>Auto tracking</b><small id="trackingCaption">Following servo angle</small></div></div><div class="tilt-control"><span>ARRAY TILT</span><input id="tiltSlider" type="range" min="-60" max="60" value="0" aria-label="Adjust tracker panel tilt"><b id="tiltValue">0°</b></div><button id="demoButton" class="demo-button"><span>▶</span> DEMO MODE</button></div>
+      </section>
+      <div class="lower-strip"><article class="mini-panel"><div class="mini-icon sun-icon">☼</div><div><span>SUN POSITION</span><b id="sunPosition">TRACKING</b></div><div class="mini-tail" id="sunElevation">AUTO</div></article><article class="mini-panel"><div class="mini-icon drive-icon">⟳</div><div><span>DRIVE STATUS</span><b id="driveStatus">STANDBY</b></div><div class="mini-tail" id="driveAngle">—°</div></article><article class="mini-panel"><div class="mini-icon imu-icon">⌗</div><div><span>IMU ALIGNMENT</span><b id="imuStatus">CALIBRATED</b></div><div class="mini-tail">3 AXIS</div></article></div>
+    </section>
+
+    <aside class="telemetry-column">
+      <div class="telemetry-head"><div><span class="eyebrow">INSTRUMENTATION</span><h2>Sensor signals</h2></div><button id="refreshButton" class="refresh-button" aria-label="Refresh sensor readings" title="Refresh now">⟳</button></div>
+      <div class="signal-summary"><span class="live-indicator"></span><span id="feedLabel">Waiting for ThingSpeak</span><b id="feedAge">—</b></div>
+      <div class="gauge-grid" id="gaugeGrid" aria-live="polite"></div>
+      <div class="telemetry-foot"><span class="foot-line"></span><span>TELEMETRY FEED <b>FIELD 1 — 8</b></span><span id="lastUpdated">NO DATA</span></div>
+    </aside>
+  </main>
+
+  <dialog id="connectionDialog" class="connection-dialog"><form method="dialog" id="connectionForm"><button class="dialog-close" value="cancel" aria-label="Close">×</button><span class="eyebrow">DATA LINK <b> / </b> THINGSPEAK</span><h2>Connect your channel</h2><p>Settings are shared with the main HelioTrack dashboard and stay in this browser.</p><label>Channel ID<input id="channelInput" inputmode="numeric" placeholder="Enter your channel ID"></label><label>Read API key <span>OPTIONAL FOR PUBLIC CHANNELS</span><input id="keyInput" type="password" placeholder="Read-only key"></label><div class="dialog-actions"><button id="saveConnection" class="primary-button" type="button">SAVE &amp; CONNECT</button><button class="cancel-button" value="cancel">CANCEL</button></div><small class="security-note">Use a read-only key. This static app stores it in browser local storage.</small></form></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
